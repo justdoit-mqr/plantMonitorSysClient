@@ -202,7 +202,7 @@ void Client::refreshSlot()
 void Client::showConnected()
 {
     statusLabel->setText("服务器连接成功......");
-    timeCorrectBtn->setEnabled(true);
+    //timeCorrectBtn->setEnabled(true);//暂时停用时间校准功能
 }
 /*
  *@brief:   显示断开连接状态
@@ -424,7 +424,7 @@ void Client::receiveMessage()
     //判断HDLC包头包尾是否出错
     if(enciphedData[0]==(char)0x7E&&enciphedData[nextBlockSize-1]==(char)0x7D)
     {
-        for(int i=1;i<nextBlockSize-1;i++)
+        for(int i=1;i<enciphedData.size()-1;i++)
         {
             if(enciphedData[i]==(char)0x7C)
             {
@@ -435,19 +435,26 @@ void Client::receiveMessage()
         qDebug()<<"HDLC处理前的原始数据包："<<enciphedData.toHex();
         int checkSum=0;//校验和
         int num=enciphedData.size();//处理后数据的长度
+        /* 注意QByteArray的at()方法返回的是有符号char类型,最好在执行加法运算之前
+         * 转换成无符号char。不然如果发送方采用无符号类型计算校验和，而接收方采用
+         * 有符号类型计算校验和，两者最终求的checkSum的原码值(int 类型)会不一样。但
+         * 由于计算机采用补码进行加减运算，两者求的checkSum的补码是相同的，而我们
+         * 的校验和最终取得是checkSum(补码)的低8位自然也是相同的。
+         * 所以这里不转成quint8也不会出错，只是转换成无符号计算更容易理解
+         */
         for(int j=1;j<num-2;j++)
         {
-            checkSum+=enciphedData.at(j);//对接收的数据计算校验和
+            checkSum+=(quint8)enciphedData.at(j);//对接收的数据计算校验和
         }
         //如果校验和正确，控制命令为索要数据命令，则回复实时数据
         //因为字节数组中的元素默认为一字节的有符号char，最高位为1时则为负值，而int型的校验和为正值，故需要转换成unsigned char
-        if((checkSum&0xff)==(quint8)enciphedData.at(num-2)&&enciphedData.at(2)==0x01)
+        if((quint8)(checkSum&0xff)==(quint8)enciphedData.at(num-2)&&enciphedData.at(2)==0x01)
         {
             qDebug()<<"回复实时数据：";
             sendMessage();
         }
         //如果校验和正确，控制命令为回复数据命令，显示接收的数据,模拟服务器对客户端的控制
-        else if((checkSum&0xff)==(quint8)enciphedData.at(num-2)&&enciphedData.at(2)==0x02)
+        else if((quint8)(checkSum&0xff)==(quint8)enciphedData.at(num-2)&&enciphedData.at(2)==0x02)
         {
             qDebug()<<"显示接收的数据：";
             quint8 showVoltageH = (quint8)enciphedData.at(3);

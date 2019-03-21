@@ -51,12 +51,12 @@ private:
 
     QLabel *actualVoltage;//电压
     QLabel *presetVoltage;
-    QLineEdit *voltageInputL;
-    QLineEdit *voltageInputH;
+    QLineEdit *voltageInputL;//模拟产生的最小电压
+    QLineEdit *voltageInputH;//模拟产生的最大电压
     QLabel *actualCurrent;//电流
     QLabel *presetCurrent;
-    QLineEdit *currentInputL;
-    QLineEdit *currentInputH;
+    QLineEdit *currentInputL;//模拟产生的最小电流
+    QLineEdit *currentInputH;//模拟产生的最大电流
 
     uint voltageL;
     uint voltageH;
