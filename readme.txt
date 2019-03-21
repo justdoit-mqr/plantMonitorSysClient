@@ -1,0 +1,3 @@
+plantMonitorSysClient是个人本科毕业设计作品的客户端程序,模拟一台车间设备,与plantMonitorSys服务器程序进行通信。
+
+
